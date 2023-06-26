@@ -29,4 +29,3 @@ def connect():
 def main():
     connect()
 main()
-main()
